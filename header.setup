@@ -1,0 +1,20 @@
+# -*- mode: org; -*-
+
+# GENERAL header
+#+PROPERTY: header-args :mkdirp yes :dir . :exports both :noweb strip-export :tangle (concat "tangled/" (org-element-property :name (org-element-context))) :comments link
+# SRC header
+#+PROPERTY: header-args:src
+# SHELL header
+#+PROPERTY: header-args:shell :results output :wrap example
+# PYTHON header
+#+PROPERTY: header-args:python :session Python :results output :wrap example
+# C header
+#+PROPERTY: header-args:C :includes <stdlib.h> <stdio.h> <ctype.h> <assert.h> :flags -Wall -Werror -std=gnu99 -g -I . :results output :wrap example :main no
+# SQL header
+#+PROPERTY: header-args:sql :engine postgresql :dbhost localhost :dbuser albertovaldez :database PH-EmployeeDB :results output :wrap example
+# GO header
+#+PROPERTY: header-args:go :results output :wrap example
+# JAVASCRIPT header
+#+PROPERTY: header-args:js :results output :wrap example
+# ELISP header
+#+PROPERTY: header-args:elisp :wrap example

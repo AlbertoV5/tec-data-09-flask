@@ -1,75 +1,52 @@
-#+title:    Challenge
-#+author:   Alberto Valdez
-#+email:    avq5ac1@gmail.com
-#+SETUPFILE: ./header.setup
-#+SETUPFILE: https://albertov5.github.io/org-html-themes/org/theme-readtheorg.setup
+- [Weather Analysis](#orgfbeaa32)
+  - [Overview of the analysis](#orgaefc823)
+  - [Results](#org72a7b88)
+    - [Result: Boilerplate Base](#org9e7efa9)
+    - [Result: Functional Filter](#orgcf84068)
+    - [Result: Data Description](#orgff49abf)
+  - [Summary](#org46b26db)
 
-* Weather Analysis
 
-#+NAME: wrap_table.py
-#+begin_src python :var data = "" :wrap export html :exports none
-from xml.etree.ElementTree import Element, SubElement, dump
 
-def build_row(parent: Element, data: str, tag: str) -> Element:
-    child = SubElement(parent, "tr")
-    for s in data.split("\t"):
-        SubElement(child, tag).text = s
-    return child
-# XML
-def build_html(data: str) -> Element:
-    data = data.split("\n")
-    table = Element("table")
-    build_row(table, data[0], "th")
-    for row in data[1:-1]:
-        build_row(table, row, "td")
-    return table
+<a id="orgfbeaa32"></a>
 
-table = build_html(data)
-dump(table)
-#+end_src
+# Weather Analysis
 
-#+RESULTS: wrap_table.py
-#+begin_export html
-<table><tr><th /></tr></table>
-#+end_export
 
-#+NAME: wrap_img_html.py
-#+begin_src python :var files = "[img.png, img2.png]" width = 480 height = 480 :exports none
-import re
+<a id="orgaefc823"></a>
 
-files = re.sub("['\[\]]", "", files).split(",")
-for f in files:
-    print(f"#+attr_html: :width {width}px")
-    print(f"file:{f.strip()}")
-#+end_src
-
-#+RESULTS: wrap_img_html.py
-#+begin_example
-,#+attr_html: :width 480px
-file:img.png
-,#+attr_html: :width 480px
-file:img2.png
-#+end_example
-
-** Overview of the analysis
+## Overview of the analysis
 
 We managed to get a good understanding of our data by filtering it and summarizing it, but we would like to get another look at specific dates in order to provide more solutions for our client.
 
 That is why we went into the database once more and fetched summaries of Temperatures from June and December.
 
-** Results
+
+<a id="org72a7b88"></a>
+
+## Results
 
 We achieved the following results:
 
-1. We put together the boilerplate code for the basis of any sql query from python we could need.
-2. We made functions that abstract specific steps from the data filtering and organization for later use.
-3. We got the summaries that the client wanted.
+1.  We put together the boilerplate code for the basis of any sql query from python we could need.
+2.  We made functions that abstract specific steps from the data filtering and organization for later use.
+3.  We got the summaries that the client wanted.
 
-*** Result: Boilerplate Base
 
-One of the most useful stages in the project was stablishing a base for all our future =Python-SQL= code. Where we can set our classes and sessions to deal with whatever the client asks for.
+<a id="org9e7efa9"></a>
 
-#+begin_src python
+### Result: Boilerplate Base
+
+One of the most useful stages in the project was stablishing a base for all our future `Python-SQL` code. Where we can set our classes and sessions to deal with whatever the client asks for.
+
+<div class="src-name" id="orgb1c70e7">
+<p>
+
+</p>
+
+</div>
+
+```python
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, func
@@ -85,22 +62,29 @@ Station = Base.classes.station
 session = Session(engine)
 for col in Measurement.__table__.columns:
     print(col.key)
-#+end_src
+```
 
-#+RESULTS:
-#+begin_example
-id
-station
-date
-prcp
-tobs
-#+end_example
+    id
+    station
+    date
+    prcp
+    tobs
 
-*** Result: Functional Filter
 
-We were able to use the =func.strftime= function from =sqlalchemy= to deal with dates, then wrap the process in a function we can use for all the different queries we want.
+<a id="orgcf84068"></a>
 
-#+begin_src python
+### Result: Functional Filter
+
+We were able to use the `func.strftime` function from `sqlalchemy` to deal with dates, then wrap the process in a function we can use for all the different queries we want.
+
+<div class="src-name" id="orgd5be248">
+<p>
+
+</p>
+
+</div>
+
+```python
 def get_temperature_by_date(date: str, frmt: str, name: str) -> pd.DataFrame:
     """Get all temperature values filtered by date.
 
@@ -124,40 +108,57 @@ def get_temperature_by_date(date: str, frmt: str, name: str) -> pd.DataFrame:
         columns=[f'Temps {name}']
     )
 print(get_temperature_by_date)
-#+end_src
+```
 
-#+RESULTS:
-#+begin_example
-<function get_temperature_by_date at 0x11ea7bc20>
-#+end_example
+    <function get_temperature_by_date at 0x11618ac20>
 
-*** Result: Data Description
+
+<a id="orgff49abf"></a>
+
+### Result: Data Description
 
 Now that we have our function we can use it to get the summaries we need.
-#+begin_src python :post wrap_table.py(data=*this*) :wrap export html
+
+<div class="src-name" id="org57945c3">
+<p>
+
+</p>
+
+</div>
+
+```python
 june = get_temperature_by_date("06", "%m", "June")
 print(june.describe())
-#+end_src
+```
 
-#+RESULTS:
-#+begin_export html
 <table><tr><th>        Temps June</th></tr><tr><td>count  1700.000000</td></tr><tr><td>mean     74.944118</td></tr><tr><td>std       3.257417</td></tr><tr><td>min      64.000000</td></tr><tr><td>25%      73.000000</td></tr><tr><td>50%      75.000000</td></tr><tr><td>75%      77.000000</td></tr></table>
-#+end_export
 
 And the result from December.
-#+begin_src python :post wrap_table.py(data=*this*) :wrap export html
+
+<div class="src-name" id="org3a0ea69">
+<p>
+
+</p>
+
+</div>
+
+```python
 december = get_temperature_by_date("12", "%m", "December")
 print(december.describe())
-#+end_src
+```
 
-#+RESULTS:
-#+begin_export html
 <table><tr><th>       Temps December</th></tr><tr><td>count     1517.000000</td></tr><tr><td>mean        71.041529</td></tr><tr><td>std          3.745920</td></tr><tr><td>min         56.000000</td></tr><tr><td>25%         69.000000</td></tr><tr><td>50%         71.000000</td></tr><tr><td>75%         74.000000</td></tr></table>
-#+end_export
 
 We can also make a few plots out of the results.
 
-#+begin_src python :post wrap_img_html.py(files = *this*) :wrap org
+<div class="src-name" id="org2b1706b">
+<p>
+
+</p>
+
+</div>
+
+```python
 import matplotlib.pyplot as plt
 
 plt.style.use("seaborn-dark")
@@ -169,21 +170,30 @@ for f, df in zip(files, dfs):
     plt.savefig(f)
     plt.close()
 print(files)
-#+end_src
+```
 
-#+RESULTS:
-#+begin_org
-#+attr_html: :width 480px
-file:temp_june.png
-#+attr_html: :width 480px
-file:temp_dec.png
-#+end_org
+<div class="org" id="orgcc8358b">
+
+<div id="orgc8c833b" class="figure">
+<p><img src="temp_june.png" alt="temp_june.png" width="480px" />
+</p>
+</div>
 
 
-** Summary
+<div id="org486cd9d" class="figure">
+<p><img src="temp_dec.png" alt="temp_dec.png" width="480px" />
+</p>
+</div>
+
+</div>
+
+
+<a id="org46b26db"></a>
+
+## Summary
 
 Once we did the initial work of sorting out how to access, filter and transform the data, we made long strides without much effort in the following iterations of our process.
 
 This shows how a programming language like Python goes so well together with SQL as it allows us to automate repetitive tasks that may vary only a little.
 
-Splitting the work into designing our process and the process itself really helps on focusing in the data whenever we are working with it instead of having to deal with the "how" we are dealing with it.
+Splitting the work into designing our process and the process itself really helps on focusing in the data whenever we are working with it instead of having to deal with the &ldquo;how&rdquo; we are dealing with it.
